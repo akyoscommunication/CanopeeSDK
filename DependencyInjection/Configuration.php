@@ -1,6 +1,6 @@
 <?php
 
-namespace Akyos\PuppeteerSDK\DependencyInjection;
+namespace Akyos\CanopeeSDK\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
