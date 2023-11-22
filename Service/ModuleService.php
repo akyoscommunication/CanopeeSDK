@@ -16,7 +16,9 @@ class ModuleService
     public function getInternalModuleLinks(UserInterface $user)
     {
         $moduleLinks = [];
+
         $internalModules = $this->entityManager->getRepository('App\\Entity\\Module')->findBy(['external' => false]);
+
         foreach($internalModules as $module) {
             $moduleLinks[$module->getId()] = [
                 'name' => $module->getName(),
@@ -30,6 +32,7 @@ class ModuleService
             return $moduleRole->getModule();
         });
         $userExternalModules = array_filter($userModules, function($module) {
+
             return !$module->isExternal();
         });
         foreach($userExternalModules as $module) {
