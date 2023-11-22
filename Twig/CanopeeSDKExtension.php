@@ -2,26 +2,25 @@
 
 namespace Akyos\PuppeteerSDK\Twig;
 
+use Akyos\CanopeeSDK\Service\ModuleService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
-class CanopeeSDKExtension extends AbstractExtension
+readonly class CanopeeSDKExtension extends AbstractExtension
 {
-    private $urlGenerator;
-    private $container;
-
-    public function __construct(UrlGeneratorInterface $urlGenerator, ContainerInterface $container)
-    {
-        $this->urlGenerator = $urlGenerator;
-        $this->container = $container;
-    }
+    public function __construct(
+        private UrlGeneratorInterface $urlGenerator,
+        private ContainerInterface    $container,
+        private ModuleService         $moduleService,
+    ) {}
 
     public function getFunctions(): array
     {
         return [
             new TwigFunction('canopee_sdk_path', [$this, 'canopeeSDKPath']),
+            new TwigFunction('getInternalModuleLinks', [$this->moduleService, 'getInternalModuleLinks']),
         ];
     }
 
