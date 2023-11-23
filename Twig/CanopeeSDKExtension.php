@@ -1,6 +1,6 @@
 <?php
 
-namespace Akyos\PuppeteerSDK\Twig;
+namespace Akyos\CanopeeSDK\Twig;
 
 use Akyos\CanopeeSDK\Service\ModuleService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -8,12 +8,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
-readonly class CanopeeSDKExtension extends AbstractExtension
+class CanopeeSDKExtension extends AbstractExtension
 {
     public function __construct(
-        private UrlGeneratorInterface $urlGenerator,
-        private ContainerInterface    $container,
-        private ModuleService         $moduleService,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly ContainerInterface    $container,
+        private readonly ModuleService         $moduleService,
     ) {}
 
     public function getFunctions(): array
