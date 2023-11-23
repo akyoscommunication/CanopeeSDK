@@ -20,7 +20,7 @@ class CanopeeSDKExtension extends AbstractExtension
     {
         return [
             new TwigFunction('canopee_sdk_path', [$this, 'canopeeSDKPath']),
-            new TwigFunction('getInternalModuleLinks', [$this->moduleService, 'getInternalModuleLinks']),
+            new TwigFunction('getModuleLinks', [$this->moduleService, 'getModuleLinks']),
         ];
     }
 

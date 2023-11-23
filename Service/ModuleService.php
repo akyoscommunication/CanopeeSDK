@@ -13,11 +13,11 @@ class ModuleService
     {
     }
 
-    public function getInternalModuleLinks(UserInterface $user)
+    public function getModuleLinks(UserInterface $user, bool $externalModules = false): array
     {
         $moduleLinks = [];
 
-        $internalModules = $this->entityManager->getRepository('App\\Entity\\Module')->findBy(['external' => false]);
+        $internalModules = $this->entityManager->getRepository('App\\Entity\\Module')->findBy(['external' => $externalModules]);
 
         foreach($internalModules as $module) {
             $moduleLinks[$module->getId()] = [
@@ -31,11 +31,10 @@ class ModuleService
         $userModules = $user->getModuleRoles()->map(function($moduleRole) {
             return $moduleRole->getModule();
         });
-        $userExternalModules = $userModules->filter( function($module) {
-
-            return !$module->isExternal();
+        $userModules = $userModules->filter( function($module) use($externalModules) {
+            return $externalModules ? $module->isExternal() : !$module->isExternal();
         });
-        foreach($userExternalModules as $module) {
+        foreach($userModules as $module) {
             $moduleLinks[$module->getId()] = [
                 'name' => $module->getName(),
                 'url' => $module->getUrl(),
