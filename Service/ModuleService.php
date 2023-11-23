@@ -31,7 +31,7 @@ class ModuleService
         $userModules = $user->getModuleRoles()->map(function($moduleRole) {
             return $moduleRole->getModule();
         });
-        $userExternalModules = array_filter($userModules, function($module) {
+        $userExternalModules = $userModules->filter( function($module) {
 
             return !$module->isExternal();
         });
