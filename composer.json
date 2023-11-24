@@ -29,7 +29,8 @@
 	"symfony/routing": "6.*",
 	"symfony/framework-bundle": "6.*",
 	"firebase/php-jwt": "^6.4",
-	"symfony/security-core": "*"
+	"symfony/security-core": "*",
+	"league/oauth2-client": "^2.7"
     },
     "autoload": {
         "psr-4": { "Akyos\\CanopeeSDK\\": "" },
