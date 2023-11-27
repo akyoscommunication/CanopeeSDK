@@ -24,30 +24,32 @@ class ProviderService
     ){
         $this->security = $security;
         $this->user = $this->security->getUser();
-        if($this->user && !method_exists($this->user, 'getAccessToken')) {
-            throw new \Exception('User must have a UserCanopeeSDK Trait');
-        }
-        $this->refresh_token = $this->user->getRefreshToken();
+        if ($this->user){
+            if(!method_exists($this->user, 'getAccessToken')) {
+                throw new \Exception('User must have a UserCanopeeSDK Trait');
+            }
+            $this->refresh_token = $this->user->getRefreshToken();
 
-        $this->client = new GenericProvider([
-            'clientId' => $this->clientId,
-            'clientSecret' => $this->clientSecret,
-            'urlAuthorize' => $this->canopeeUrl.'authorize',
-            'urlAccessToken' => $this->canopeeUrl.'token',
-            'urlResourceOwnerDetails' => $this->canopeeUrl,
-        ]);
-
-        $this->accessToken = $this->user->getAccessToken();
-        if($this->accessToken === null || $this->accessToken === "") {
-            $response = $this->client->getAccessToken('password', [
-                'username' => $this->user->getUserIdentifier(),
-                'password' => $this->user->getModuleToken(),
+            $this->client = new GenericProvider([
+                'clientId' => $this->clientId,
+                'clientSecret' => $this->clientSecret,
+                'urlAuthorize' => $this->canopeeUrl.'authorize',
+                'urlAccessToken' => $this->canopeeUrl.'token',
+                'urlResourceOwnerDetails' => $this->canopeeUrl,
             ]);
-            $this->user->setRefreshToken($response->getRefreshToken());
-            $this->accessToken = $response->getToken();
-            $this->user->setAccessToken($this->accessToken);
+
+            $this->accessToken = $this->user->getAccessToken();
+            if($this->accessToken === null || $this->accessToken === "") {
+                $response = $this->client->getAccessToken('password', [
+                    'username' => $this->user->getUserIdentifier(),
+                    'password' => $this->user->getModuleToken(),
+                ]);
+                $this->user->setRefreshToken($response->getRefreshToken());
+                $this->accessToken = $response->getToken();
+                $this->user->setAccessToken($this->accessToken);
+            }
+            $entityManager->flush();
         }
-        $entityManager->flush();
     }
 
     public function get(string $resource): string
