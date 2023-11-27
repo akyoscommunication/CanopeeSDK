@@ -17,13 +17,9 @@ class Configuration implements ConfigurationInterface
         $treeBuilder
             ->getRootNode()
                 ->children()
-                    ->arrayNode('token')
-                        ->children()
-                            ->scalarNode('key')->defaultValue('%env(CANOPEESDK_KEY)%')->end()
-                            ->scalarNode('algo')->defaultValue('HS256')->end()
-                            ->scalarNode('validity_time')->defaultValue('60')->end()
-                        ->end()
-                    ->end()
+                    ->scalarNode('client_id')->defaultValue('%env(CANOPEESDK_CLIENT_ID)%')->end()
+                    ->scalarNode('client_secret')->defaultValue('%env(CANOPEESDK_CLIENT_SECRET)%')->end()
+                    ->scalarNode('endpoint')->defaultValue('%env(CANOPEESDK_ENPOINT)%')->end()
                 ->end()
             ->end()
         ;

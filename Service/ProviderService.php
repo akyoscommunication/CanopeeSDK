@@ -2,18 +2,20 @@
 
 namespace Akyos\CanopeeSDK\Service;
 
+use App\Class\Query;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ProviderService
 {
     private mixed $user;
-    private string $clientId = "216ce83e11f99298d324f6060598f670";
-    private string $clientSecret = "61ef731cea95921a479754321cee2dcd517d1d12f85b313de6bdadfb8155d1ecd93b3e2afb0e2bdd57aed569291737ced3ae5c8228ba7e43c9bfc95cdb7b5f94";
-    private string $canopeeUrl = "http://localhost:8000/";
+    private string $clientId;
+    private string $clientSecret;
+    private string $canopeeUrl;
     private ?string $accessToken = null;
     private ?string $refresh_token = null;
     private GenericProvider $client;
@@ -21,13 +23,15 @@ class ProviderService
     public function __construct(
         private Security $security,
         private EntityManagerInterface $entityManager,
+        private ContainerInterface $container
     ){
         $this->security = $security;
         $this->user = $this->security->getUser();
-        if ($this->user){
-            if(!method_exists($this->user, 'getAccessToken')) {
-                throw new \Exception('User must have a UserCanopeeSDK Trait');
-            }
+        $this->clientId = $this->container->getParameter('client_id');
+        $this->clientSecret = $this->container->getParameter('client_secret');
+        $this->canopeeUrl = $this->container->getParameter('endpoint');
+        
+        if ($this->user && method_exists($this->user, 'getAccessToken')){
             $this->refresh_token = $this->user->getRefreshToken();
 
             $this->client = new GenericProvider([
@@ -52,11 +56,16 @@ class ProviderService
         }
     }
 
-    public function get(string $resource): string
+    public function new(string $resouces = null, ?string $method = 'GET'): Query
+    {
+        return new Query($this, $method, $resouces);
+    }
+
+    public function get(Query $query): \stdClass
     {
         $request = $this->client->getAuthenticatedRequest(
-            'GET',
-            $this->canopeeUrl.'api/'.$resource,
+            $query->getMethod(),
+            $this->canopeeUrl.$query->getResource().'?'.http_build_query($query->getQueryParams()),
             $this->accessToken
         );
         try {
@@ -65,12 +74,12 @@ class ProviderService
             $this->refreshToken();
             $request = $this->client->getAuthenticatedRequest(
                 'GET',
-                $this->canopeeUrl.'api/'.$resource,
+                $this->canopeeUrl.$query->getResource(),
                 $this->accessToken
             );
             $response = $this->client->getResponse($request);
         }
-        return $response->getBody()->getContents();
+        return json_decode($response->getBody()->getContents());
     }
 
     private function refreshToken(): void
