@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Class;
+namespace Akyos\CanopeeSDK\Class;
 
 use Akyos\CanopeeSDK\Service\ProviderService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Service\Attribute\Required;
 
-final class Query extends AbstractController
+class Query
 {
     private ?string $resource = null;
 
-    private string $method;
+    private ?string $method = null;
 
     private ?int $items = null;
     private ?string $type = null;
@@ -26,7 +26,7 @@ final class Query extends AbstractController
 
     private ProviderService $providerService;
 
-    public function __construct(ProviderService $providerService, string $method, ?string $resource = null)
+    public function __construct(ProviderService $providerService, string $method = '' , ?string $resource = null)
     {
         $this->providerService = $providerService;
         $this->resource = $resource;

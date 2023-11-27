@@ -2,7 +2,7 @@
 
 namespace Akyos\CanopeeSDK\Service;
 
-use Akyos\CanopeeSDK\Query;
+use Akyos\CanopeeSDK\Class\Query;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -45,7 +45,7 @@ class ProviderService
             $this->accessToken = $this->user->getAccessToken();
             if($this->accessToken === null || $this->accessToken === "") {
                 $response = $this->client->getAccessToken('password', [
-                    'username' => $this->user->getUserIdentifier(),
+                    'username' => str_contains($this->user->getUserIdentifier(), '@') ? $this->user->getId() : $this->user->getUserIdentifier(),
                     'password' => $this->user->getModuleToken(),
                 ]);
                 $this->user->setRefreshToken($response->getRefreshToken());
@@ -56,7 +56,7 @@ class ProviderService
         }
     }
 
-    public function new(string $resouces = null, ?string $method = 'GET'): Query
+    public function new(string $resouces = null, string $method = 'GET'): Query
     {
         return new Query($this, $method, $resouces);
     }
@@ -65,7 +65,7 @@ class ProviderService
     {
         $request = $this->client->getAuthenticatedRequest(
             $query->getMethod(),
-            $this->canopeeUrl.$query->getResource().'?'.http_build_query($query->getQueryParams()),
+            $this->canopeeUrl.'api/'.$query->getResource().'?'.http_build_query($query->getQueryParams()),
             $this->accessToken
         );
         try {
@@ -74,7 +74,7 @@ class ProviderService
             $this->refreshToken();
             $request = $this->client->getAuthenticatedRequest(
                 'GET',
-                $this->canopeeUrl.$query->getResource(),
+                $this->canopeeUrl.'api/'.$query->getResource(),
                 $this->accessToken
             );
             $response = $this->client->getResponse($request);

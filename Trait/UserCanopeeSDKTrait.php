@@ -4,16 +4,22 @@ namespace Akyos\CanopeeSDK\Trait;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait UserCanopeeSDKTrait
 {
+    public const GROUP_USER_READ = 'user:read';
+
     #[ORM\Column(type: Types::STRING, length: 1000, nullable: true)]
+    #[Groups([self::GROUP_USER_READ])]
     protected ?string $moduleToken = null;
 
     #[ORM\Column(type: Types::STRING, length: 1000, nullable: true)]
+    #[Groups([self::GROUP_USER_READ])]
     protected ?string $accessToken = null;
 
     #[ORM\Column(type: Types::STRING, length: 1000, nullable: true)]
+    #[Groups([self::GROUP_USER_READ])]
     protected ?string $refreshToken = null;
 
     public function getModuleToken(): ?string
