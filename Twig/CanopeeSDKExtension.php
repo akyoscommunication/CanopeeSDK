@@ -21,7 +21,7 @@ class CanopeeSDKExtension extends AbstractExtension
     {
         return [
             new TwigFunction('canopee_sdk_path', [$this, 'canopeeSDKPath']),
-            new TwigFunction('get', [$this->providerService, 'get']),
+            new TwigFunction('getResource', [$this->providerService, 'get']),
         ];
     }
 

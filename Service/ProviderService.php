@@ -24,7 +24,7 @@ class ProviderService
     ){
         $this->security = $security;
         $this->user = $this->security->getUser();
-        if(!method_exists($this->user, 'getAccessToken')) {
+        if($this->user && !method_exists($this->user, 'getAccessToken')) {
             throw new \Exception('User must have a UserCanopeeSDK Trait');
         }
         $this->refresh_token = $this->user->getRefreshToken();
