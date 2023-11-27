@@ -10,9 +10,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 
 class ProviderService
 {
-    private static $provider = null;
-    private Security $security;
-    private UserInterface $user;
+    private mixed $user;
     private string $clientId = "216ce83e11f99298d324f6060598f670";
     private string $clientSecret = "61ef731cea95921a479754321cee2dcd517d1d12f85b313de6bdadfb8155d1ecd93b3e2afb0e2bdd57aed569291737ced3ae5c8228ba7e43c9bfc95cdb7b5f94";
     private string $canopeeUrl = "http://localhost:8000/";
@@ -20,7 +18,9 @@ class ProviderService
     private ?string $refresh_token = null;
     private GenericProvider $client;
 
-    protected function __construct(Security $security
+    public function __construct(
+        private Security $security,
+        private EntityManagerInterface $entityManager,
     ){
         $this->security = $security;
         $this->user = $this->security->getUser();
@@ -37,49 +37,48 @@ class ProviderService
             'urlResourceOwnerDetails' => $this->canopeeUrl,
         ]);
 
-        if($this->accessToken === null) {
-            $this->accessToken = $this->client->getAccessToken('password', [
-                'username' => $this->user->getUsername(),
-                'password' => $this->user->getPassword(),
+        $this->accessToken = $this->user->getAccessToken();
+        if($this->accessToken === null || $this->accessToken === "") {
+            $response = $this->client->getAccessToken('password', [
+                'username' => $this->user->getUserIdentifier(),
+                'password' => $this->user->getModuleToken(),
             ]);
-            $this->user->setRefreshToken($this->accessToken->getRefreshToken());
+            $this->user->setRefreshToken($response->getRefreshToken());
+            $this->accessToken = $response->getToken();
             $this->user->setAccessToken($this->accessToken);
         }
-    }
-
-    public static function getInstance($security): ProviderService
-    {
-        if(self::$provider === null) {
-            self::$provider = new ProviderService($security);
-        }
-        return self::$provider;
+        $entityManager->flush();
     }
 
     public function get(string $resource): string
     {
-        $request = $provider->getAuthenticatedRequest(
+        $request = $this->client->getAuthenticatedRequest(
             'GET',
             $this->canopeeUrl.'api/'.$resource,
             $this->accessToken
         );
-        if($response->getStatusCode() === 401) {
+        try {
+            $response = $this->client->getResponse($request);
+        } catch (\Exception $e) {
             $this->refreshToken();
-            $request = $provider->getAuthenticatedRequest(
+            $request = $this->client->getAuthenticatedRequest(
                 'GET',
                 $this->canopeeUrl.'api/'.$resource,
                 $this->accessToken
             );
+            $response = $this->client->getResponse($request);
         }
-        $response = $provider->getResponse($request);
         return $response->getBody()->getContents();
     }
 
     private function refreshToken(): void
     {
-        $this->accessToken = $this->client->getAccessToken('refresh_token', [
+        $response = $this->client->getAccessToken('refresh_token', [
             'refresh_token' => $this->refresh_token,
         ]);
-        $this->user->setRefreshToken($this->accessToken->getRefreshToken());
+        $this->user->setRefreshToken($response->getRefreshToken());
+        $this->accessToken = $response->getToken();
         $this->user->setAccessToken($this->accessToken);
+        $this->entityManager->flush();
     }
 }
