@@ -2,7 +2,7 @@
 
 namespace Akyos\CanopeeSDK\Service;
 
-use App\Class\Query;
+use Akyos\CanopeeSDK\Query;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
