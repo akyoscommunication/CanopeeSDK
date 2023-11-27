@@ -3,6 +3,7 @@
 namespace Akyos\CanopeeSDK\Twig;
 
 use Akyos\CanopeeSDK\Service\ModuleService;
+use Akyos\CanopeeSDK\Service\ProviderService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
@@ -13,14 +14,14 @@ class CanopeeSDKExtension extends AbstractExtension
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly ContainerInterface    $container,
-        private readonly ModuleService         $moduleService,
+        private readonly ProviderService       $providerService
     ) {}
 
     public function getFunctions(): array
     {
         return [
             new TwigFunction('canopee_sdk_path', [$this, 'canopeeSDKPath']),
-            new TwigFunction('getModuleLinks', [$this->moduleService, 'getModuleLinks']),
+            new TwigFunction('get', [$this->providerService, 'get']),
         ];
     }
 
