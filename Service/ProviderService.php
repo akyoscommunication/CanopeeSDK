@@ -3,6 +3,7 @@
 namespace Akyos\CanopeeSDK\Service;
 
 use Akyos\CanopeeSDK\Class\Query;
+use League\Bundle\OAuth2ServerBundle\Entity\Client;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -30,8 +31,8 @@ class ProviderService
         $this->clientId = $this->container->getParameter('client_id');
         $this->clientSecret = $this->container->getParameter('client_secret');
         $this->canopeeUrl = $this->container->getParameter('endpoint');
-        
-        if ($this->user && method_exists($this->user, 'getAccessToken')){
+
+        if ($this->user && method_exists($this->user, 'getAccessToken') && $_SERVER['APP_ENV'] !== 'test'){
             $this->refresh_token = $this->user->getRefreshToken();
 
             $this->client = new GenericProvider([
@@ -63,23 +64,33 @@ class ProviderService
 
     public function get(Query $query): \stdClass
     {
-        $request = $this->client->getAuthenticatedRequest(
-            $query->getMethod(),
-            $this->canopeeUrl.'api/'.$query->getResource().'?'.http_build_query($query->getQueryParams()),
-            $this->accessToken
-        );
-        try {
-            $response = $this->client->getResponse($request);
-        } catch (\Exception $e) {
-            $this->refreshToken();
+        if($_SERVER['APP_ENV'] !== 'test') {
+
             $request = $this->client->getAuthenticatedRequest(
-                'GET',
-                $this->canopeeUrl.'api/'.$query->getResource(),
+                $query->getMethod(),
+                $this->canopeeUrl . 'api/' . $query->getResource() . '?' . http_build_query($query->getQueryParams()),
                 $this->accessToken
             );
-            $response = $this->client->getResponse($request);
+            try {
+                $response = $this->client->getResponse($request);
+            } catch (\Exception $e) {
+                $this->refreshToken();
+                $request = $this->client->getAuthenticatedRequest(
+                    'GET',
+                    $this->canopeeUrl . 'api/' . $query->getResource(),
+                    $this->accessToken
+                );
+                $response = $this->client->getResponse($request);
+            }
+            return json_decode($response->getBody()->getContents());
         }
-        return json_decode($response->getBody()->getContents());
+        return (object) [
+            'hydra:member' => [],
+            'hydra:totalItems' => 0,
+            '@type' => '',
+            '@id' => '',
+            '@context' => '',
+        ];
     }
 
     private function refreshToken(): void
