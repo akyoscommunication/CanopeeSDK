@@ -22,7 +22,7 @@ class CanopeeSDKExtension extends AbstractExtension
         return [
             new TwigFunction('canopee_sdk_path', [$this, 'canopeeSDKPath']),
             new TwigFunction('new', [$this->providerService, 'new']),
-            new TwigFunction('getUserFile', [$this, 'getUserFile']),
+            new TwigFunction('getFile', [$this, 'getFile']),
         ];
     }
 
@@ -35,8 +35,8 @@ class CanopeeSDKExtension extends AbstractExtension
         ]);
     }
 
-    public function getUserFile(int $entity, string $property): string
+    public function getFile(string $resource, int $entity, string $property): string
     {
-        return $this->providerService->new('file/users', 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults()->file;
+        return $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults()->file;
     }
 }
