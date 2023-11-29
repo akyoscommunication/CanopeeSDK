@@ -5,6 +5,7 @@ namespace Akyos\CanopeeSDK\Service;
 use Akyos\CanopeeSDK\Class\Query;
 use League\Bundle\OAuth2ServerBundle\Entity\Client;
 use League\OAuth2\Client\Provider\GenericProvider;
+use Psr\Http\Message\RequestInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,23 +27,27 @@ class ProviderService
         private EntityManagerInterface $entityManager,
         private ContainerInterface $container
     ){
-        $this->security = $security;
-        $this->user = $this->security->getUser();
+        $this->user = $security->getUser();
         $this->clientId = $this->container->getParameter('client_id');
         $this->clientSecret = $this->container->getParameter('client_secret');
         $this->canopeeUrl = $this->container->getParameter('endpoint');
 
+        $this->client = new GenericProvider([
+            'clientId' => $this->clientId,
+            'clientSecret' => $this->clientSecret,
+            'urlAuthorize' => $this->canopeeUrl.'authorize',
+            'urlAccessToken' => $this->canopeeUrl.'token',
+            'urlResourceOwnerDetails' => $this->canopeeUrl,
+        ]);
+    }
+
+    public function new(string $resouces = null, string $method = 'GET', $user = null): Query
+    {
+        if($user !== null) {
+            $this->user = $user;
+        }
         if ($this->user && method_exists($this->user, 'getAccessToken') && $_SERVER['APP_ENV'] !== 'test'){
             $this->refresh_token = $this->user->getRefreshToken();
-
-            $this->client = new GenericProvider([
-                'clientId' => $this->clientId,
-                'clientSecret' => $this->clientSecret,
-                'urlAuthorize' => $this->canopeeUrl.'authorize',
-                'urlAccessToken' => $this->canopeeUrl.'token',
-                'urlResourceOwnerDetails' => $this->canopeeUrl,
-            ]);
-
             $this->accessToken = $this->user->getAccessToken();
             if($this->accessToken === null || $this->accessToken === "") {
                 $response = $this->client->getAccessToken('password', [
@@ -53,33 +58,20 @@ class ProviderService
                 $this->accessToken = $response->getToken();
                 $this->user->setAccessToken($this->accessToken);
             }
-            $entityManager->flush();
+            $this->entityManager->flush();
         }
-    }
-
-    public function new(string $resouces = null, string $method = 'GET'): Query
-    {
         return new Query($this, $method, $resouces);
     }
 
     public function get(Query $query): \stdClass
     {
         if($_SERVER['APP_ENV'] !== 'test') {
-
-            $request = $this->client->getAuthenticatedRequest(
-                $query->getMethod(),
-                $this->canopeeUrl . 'api/' . $query->getResource() . '?' . http_build_query($query->getQueryParams()),
-                $this->accessToken
-            );
+            $request = $this->request($query);
             try {
                 $response = $this->client->getResponse($request);
             } catch (\Exception $e) {
                 $this->refreshToken();
-                $request = $this->client->getAuthenticatedRequest(
-                    'GET',
-                    $this->canopeeUrl . 'api/' . $query->getResource(),
-                    $this->accessToken
-                );
+                $request = $this->request($query);
                 $response = $this->client->getResponse($request);
             }
             return json_decode($response->getBody()->getContents());
@@ -91,6 +83,15 @@ class ProviderService
             '@id' => '',
             '@context' => '',
         ];
+    }
+
+    private function request(Query $query): RequestInterface
+    {
+        return $this->client->getAuthenticatedRequest(
+            $query->getMethod(),
+            $this->canopeeUrl . 'api/' . $query->getResource() . '?' . http_build_query($query->getQueryParams()),
+            $this->accessToken
+        );
     }
 
     private function refreshToken(): void
