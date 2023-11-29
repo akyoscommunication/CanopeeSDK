@@ -13,16 +13,11 @@ class Query
     private ?string $method = null;
 
     private ?int $items = null;
-    private ?string $type = null;
-    private ?string $id = null;
-
     private ?int $page = 1;
-
-    private ?string $context = null;
 
     private array $queryParams = [];
     private array $pathParams = [];
-    private ?array $results = null;
+    private mixed $results = null;
 
     private ProviderService $providerService;
 
@@ -33,15 +28,16 @@ class Query
         $this->method = $method;
     }
 
-    public function getResults(): array
+    public function getResults(): array|\stdClass|null
     {
         if($this->results === null) {
             $request = $this->providerService->get($this);
-            $this->results = $request->{'hydra:member'};
-            $this->items = $request->{'hydra:totalItems'};
-            $this->type = $request->{'@type'};
-            $this->id = $request->{'@id'};
-            $this->context = $request->{'@context'};
+            if(property_exists($request, 'hydra:member')){
+                $this->results = $request->{'hydra:member'};
+                $this->items = $request->{'hydra:totalItems'};
+            }else{
+                $this->results = $request;
+            }
         }
         return $this->results;
     }
