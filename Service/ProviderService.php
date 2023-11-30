@@ -27,7 +27,6 @@ class ProviderService
         private EntityManagerInterface $entityManager,
         private ContainerInterface $container
     ){
-        $this->user = $security->getUser();
         $this->clientId = $this->container->getParameter('client_id');
         $this->clientSecret = $this->container->getParameter('client_secret');
         $this->canopeeUrl = $this->container->getParameter('endpoint');
@@ -43,6 +42,7 @@ class ProviderService
 
     public function new(string $resouces = null, string $method = 'GET', $user = null): Query
     {
+        $this->user = $this->security->getUser();
         if($user !== null) {
             $this->user = $user;
         }
@@ -87,9 +87,13 @@ class ProviderService
 
     private function request(Query $query): RequestInterface
     {
+        $pathParams = '';
+        foreach ($query->getPathParams() as $value) {
+            $pathParams .= '/'.$value;
+        }
         return $this->client->getAuthenticatedRequest(
             $query->getMethod(),
-            $this->canopeeUrl . 'api/' . $query->getResource() . '?' . http_build_query($query->getQueryParams()),
+            $this->canopeeUrl . 'api/' . $query->getResource(). $pathParams . '?' . http_build_query($query->getQueryParams()),
             $this->accessToken
         );
     }
