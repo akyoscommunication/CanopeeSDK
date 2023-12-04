@@ -27,9 +27,9 @@ class ProviderService
         private EntityManagerInterface $entityManager,
         private ContainerInterface $container
     ){
-        $this->clientId = $this->container->getParameter('client_id');
-        $this->clientSecret = $this->container->getParameter('client_secret');
-        $this->canopeeUrl = $this->container->getParameter('endpoint');
+        $this->clientId = $this->container->getParameter('api')['client_id'];
+        $this->clientSecret = $this->container->getParameter('api')['client_secret'];
+        $this->canopeeUrl = $this->container->getParameter('api')['endpoint'];
 
         $this->client = new GenericProvider([
             'clientId' => $this->clientId,
