@@ -5,16 +5,19 @@ namespace Akyos\CanopeeSDK\Twig;
 use Akyos\CanopeeSDK\Service\ModuleService;
 use Akyos\CanopeeSDK\Service\ProviderService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
 use Twig\TwigFunction;
 
-class CanopeeSDKExtension extends AbstractExtension
+class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
 {
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly ContainerInterface    $container,
-        private readonly ProviderService       $providerService
+        private readonly ProviderService       $providerService,
+        private readonly RequestStack         $requestStack
     ) {}
 
     public function getFunctions(): array
@@ -38,5 +41,12 @@ class CanopeeSDKExtension extends AbstractExtension
     public function getFile(string $resource, int $entity, string $property): string
     {
         return $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults()->file;
+    }
+
+    public function getGlobals(): array
+    {
+        return [
+            'userCanopee' => $this->requestStack->getSession()->get('userCanopee'),
+        ];
     }
 }
