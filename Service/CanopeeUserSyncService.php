@@ -26,7 +26,7 @@ class CanopeeUserSyncService
     public function createFormCanopee(?object $userCanopee){
 
         if(!$user = $this->entityManager->getRepository($this->container->getParameter('entity')['user_entity'])->findOneBy(['uuid' => $userCanopee->id])){
-            $user = new ($this->entityManager->getRepository($this->container->getParameter('entity')['user_entity']))();
+            $user = new ($this->container->getParameter('entity')['user_entity'])();
             $user->setUuid($userCanopee->id);
         }
         $moduleRoles = array_map(function($role){
