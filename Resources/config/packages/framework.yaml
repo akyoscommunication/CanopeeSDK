@@ -1,0 +1,7 @@
+framework:
+  webhook:
+    routing:
+      sync_user:
+        service: Akyos\CanopeeSDK\Webhook\SyncUserParser
+      sync_customer:
+        service: Akyos\CanopeeSDK\Webhook\SyncCustomerParser
