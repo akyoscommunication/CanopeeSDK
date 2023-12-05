@@ -22,6 +22,10 @@ trait UserCanopeeSDKTrait
     #[Groups([self::GROUP_USER_READ])]
     protected ?string $refreshToken = null;
 
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Groups([self::GROUP_USER_READ])]
+    protected ?string $userCanopee = null;
+
     public function getModuleToken(): ?string
     {
         return $this->moduleToken;
@@ -50,5 +54,15 @@ trait UserCanopeeSDKTrait
     public function setAccessToken(?string $accessToken): void
     {
         $this->accessToken = $accessToken;
+    }
+
+    public function getUserCanopee(): ?string
+    {
+        return $this->userCanopee;
+    }
+
+    public function setUserCanopee(?string $userCanopee): void
+    {
+        $this->userCanopee = $userCanopee;
     }
 }

@@ -20,10 +20,9 @@ class CanopeeUserSyncService
         private readonly Security $security
     )
     {
-
     }
 
-    public function createFormCanopee(?object $userCanopee){
+    public function createOrUpdateFormCanopee(?object $userCanopee){
 
         if(!$user = $this->entityManager->getRepository($this->container->getParameter('entity')['user_entity'])->findOneBy(['uuid' => $userCanopee->id])){
             $user = new ($this->container->getParameter('entity')['user_entity'])();
@@ -38,9 +37,13 @@ class CanopeeUserSyncService
         else if(in_array('ROLE_ADMIN', $userCanopee->roles)){
             $user->setRoles(['ROLE_ADMIN']);
         } else {
-            $user->setRoles($roles);
+            $user->setRoles($moduleRoles);
         }
         $user->setModuleToken($userCanopee->moduleToken);
+        $user->setUserCanopee(json_encode($userCanopee));
+        if($userCanopee->deletedState === 'delete'){
+            $this->entityManager->getRepository($this->container->getParameter('entity')['user_entity'])->remove($user, true);
+        }
         $this->entityManager->getRepository($this->container->getParameter('entity')['user_entity'])->add($user, true);
 
         return $user;

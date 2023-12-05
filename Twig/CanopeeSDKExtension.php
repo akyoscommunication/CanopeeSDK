@@ -10,15 +10,22 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFunction;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 
 class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
 {
+
+    public TagAwareAdapter $cache;
+
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly ContainerInterface    $container,
         private readonly ProviderService       $providerService,
         private readonly RequestStack         $requestStack
-    ) {}
+    ) {
+        $this->cache = new TagAwareAdapter(new FilesystemAdapter());
+    }
 
     public function getFunctions(): array
     {
@@ -38,9 +45,17 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
         ]);
     }
 
-    public function getFile(string $resource, int $entity, string $property): string
+    public function getFile(string $resource, int $entity, string $property): mixed
     {
-        return $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults()->file;
+        $base64 = $this->cache->get($resource.$entity.$property, function (mixed $item) use ($resource, $entity, $property): mixed {
+
+            $base64 = $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults()->file;
+            $item->tag('file');
+
+            return $base64;
+        });
+
+        return $base64;
     }
 
     public function getGlobals(): array
