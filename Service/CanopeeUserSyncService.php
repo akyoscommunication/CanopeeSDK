@@ -28,9 +28,15 @@ class CanopeeUserSyncService
             $user = new ($this->container->getParameter('entity')['user_entity'])();
             $user->setUuid($userCanopee->id);
         }
-        $moduleRoles = array_map(function($role){
+
+        $moduleRoles = array_filter($userCanopee->moduleRoles, function($role){
+            return $role->module->slug === $this->container->getParameter('module_slug');
+        });
+
+        $moduleRoles = array_map(function($role) use ($userCanopee){
             return $role->value;
-        }, $userCanopee->moduleRoles);
+        }, $moduleRoles);
+
         if(in_array('ROLE_SUPER_ADMIN', $userCanopee->roles)){
             $user->setRoles(['ROLE_SUPER_ADMIN']);
         }
@@ -39,8 +45,14 @@ class CanopeeUserSyncService
         } else {
             $user->setRoles($moduleRoles);
         }
+
         $user->setModuleToken($userCanopee->moduleToken);
         $user->setUserCanopee(json_encode($userCanopee));
+
+        if($userCanopee->customer !== null){
+            $user->setCustomer($this->entityManager->getRepository($this->container->getParameter('entity')['customer_entity'])->findOneBy(['canopeeId' => $userCanopee->customer->id]));
+        }
+
         if($userCanopee->deletedState === 'delete'){
             $this->entityManager->getRepository($this->container->getParameter('entity')['user_entity'])->remove($user, true);
         }

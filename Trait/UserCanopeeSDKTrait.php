@@ -56,9 +56,9 @@ trait UserCanopeeSDKTrait
         $this->accessToken = $accessToken;
     }
 
-    public function getUserCanopee(): ?string
+    public function getUserCanopee(): ?\stdClass
     {
-        return $this->userCanopee;
+        return json_decode($this->userCanopee);
     }
 
     public function setUserCanopee(?string $userCanopee): void
