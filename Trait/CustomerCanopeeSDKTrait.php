@@ -18,9 +18,9 @@ trait CustomerCanopeeSDKTrait
 
     protected ?string $customerCanopee = null;
 
-    public function getCustomerCanopee(): ?string
+    public function getCustomerCanopee(): ?\stdClass
     {
-        return $this->customerCanopee;
+        return json_decode($this->customerCanopee);
     }
 
     public function setCustomerCanopee(?string $customerCanopee): void

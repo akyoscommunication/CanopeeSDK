@@ -17,6 +17,8 @@ class Query
 
     private array $queryParams = [];
     private array $pathParams = [];
+
+    private array $body = [];
     private mixed $results = null;
 
     private ProviderService $providerService;
@@ -139,5 +141,15 @@ class Query
     {
         $this->page = $page;
         return $this;
+    }
+
+    public function getBody(): array
+    {
+        return $this->body;
+    }
+
+    public function setBody(array $body): void
+    {
+        $this->body = $body;
     }
 }
