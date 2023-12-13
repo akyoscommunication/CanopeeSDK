@@ -13,10 +13,16 @@ use Symfony\Component\Webhook\Client\AbstractRequestParser;
 
 final class SyncUserParser extends AbstractRequestParser
 {
+    public function __construct(private readonly ContainerInterface $container)
+    {
+    }
+
     protected function getRequestMatcher(): RequestMatcherInterface
     {
+        $parsed_url = parse_url($this->container->getParameter('api')['endpoint']);
+        $host = $parsed_url['host'];
         return new ChainRequestMatcher([
-            new HostRequestMatcher('localhost'),
+            new HostRequestMatcher($host),
             new MethodRequestMatcher('POST'),
             new IsJsonRequestMatcher(),
         ]);
