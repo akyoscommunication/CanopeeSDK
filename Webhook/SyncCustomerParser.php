@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\RequestMatcher\MethodRequestMatcher;
 use Symfony\Component\HttpFoundation\RequestMatcherInterface;
 use Symfony\Component\RemoteEvent\RemoteEvent;
 use Symfony\Component\Webhook\Client\AbstractRequestParser;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 final class SyncCustomerParser extends AbstractRequestParser
 {
