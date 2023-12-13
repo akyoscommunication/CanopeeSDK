@@ -88,7 +88,9 @@ class ProviderService
     private function request(Query $query): RequestInterface
     {
         $pathParams = '';
-        $options['body'] = json_encode($query->getBody());
+        if(!empty($query->getBody())){
+            $options['body'] = json_encode($query->getBody());
+        }
         foreach ($query->getPathParams() as $value) {
             $pathParams .= '/'.$value;
         }
@@ -96,7 +98,7 @@ class ProviderService
             $query->getMethod(),
             $this->canopeeUrl . 'api/' . $query->getResource(). $pathParams . '?' . http_build_query($query->getQueryParams()),
             $this->accessToken,
-            $options
+            $options ?? []
         );
     }
 
