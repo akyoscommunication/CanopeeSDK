@@ -29,7 +29,7 @@ class CanopeeUserSyncService
             $user->setUuid($userCanopee->id);
         }
 
-        $moduleRoles = array_filter($userCanopee->moduleRoles, function($role){
+        $moduleRoles = array_filter((array) $userCanopee->moduleRoles, function($role){
             return $role->module->slug === $this->container->getParameter('module_slug');
         });
 
