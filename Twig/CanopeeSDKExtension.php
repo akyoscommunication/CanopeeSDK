@@ -47,15 +47,16 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
 
     public function getFile(string $resource, int $entity, string $property): mixed
     {
-        $base64 = $this->cache->get($resource.$entity.$property, function (mixed $item) use ($resource, $entity, $property): mixed {
+        return $this->cache->get($resource.$entity.$property, function (mixed $item) use ($resource, $entity, $property): mixed {
+            $result = $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults();
+            if (is_object($result) && property_exists($result, 'file')) {
+                $item->tag('file');
 
-            $base64 = $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults()->file;
-            $item->tag('file');
+                return $result->file;
+            }
 
-            return $base64;
+            return null;
         });
-
-        return $base64;
     }
 
     public function getGlobals(): array
