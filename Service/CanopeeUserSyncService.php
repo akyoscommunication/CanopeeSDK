@@ -49,7 +49,7 @@ class CanopeeUserSyncService
         $user->setModuleToken($userCanopee->moduleToken);
         $user->setUserCanopee(json_encode($userCanopee));
 
-        if($userCanopee->customer !== null){
+        if(property_exists($userCanopee, 'customer') && $userCanopee->customer !== null){
             $user->setCustomer($this->entityManager->getRepository($this->container->getParameter('entity')['customer_entity'])->findOneBy(['canopeeId' => $userCanopee->customer->id]));
         }
 
