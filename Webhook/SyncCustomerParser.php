@@ -20,7 +20,7 @@ final class SyncCustomerParser extends AbstractRequestParser
 
     protected function getRequestMatcher(): RequestMatcherInterface
     {
-        $parsed_url = parse_url($this->container->getParameter('api')['endpoint']);
+        $parsed_url = parse_url($this->container->getParameter('host'));
         $host = $parsed_url['host'];
         return new ChainRequestMatcher([
             new HostRequestMatcher($host),
