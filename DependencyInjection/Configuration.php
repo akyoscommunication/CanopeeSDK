@@ -31,6 +31,7 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
             ->scalarNode('module_slug')->defaultValue('%env(CANOPEE_SDK_MODULE_SLUG)%')->end()
+            ->scalarNode('host')->defaultValue('%env(HOST)%')->end()
             ->end()
         ;
 
