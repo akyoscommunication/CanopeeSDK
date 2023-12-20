@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Twig\TwigFunction;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
@@ -22,7 +23,8 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly ContainerInterface    $container,
         private readonly ProviderService       $providerService,
-        private readonly RequestStack         $requestStack
+        private readonly RequestStack         $requestStack,
+        private readonly KernelInterface      $kernel,
     ) {
         $this->cache = new TagAwareAdapter(new FilesystemAdapter());
     }
