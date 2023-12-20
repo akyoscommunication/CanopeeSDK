@@ -47,16 +47,21 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
 
     public function getFile(string $resource, int $entity, string $property): mixed
     {
-        return $this->cache->get($resource.$entity.$property, function (mixed $item) use ($resource, $entity, $property): mixed {
-            $result = $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults();
-            if (is_object($result) && property_exists($result, 'file')) {
-                $item->tag('file');
 
-                return $result->file;
-            }
+        $result = $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults();
+        if (is_object($result) && property_exists($result, 'file') && $result->file) {
+            list($type, $data) = explode(';', $result->file);
+            list(, $data)      = explode(',', $data);
+            $extension         = explode('/', $type)[1];
 
-            return null;
-        });
+            $filename = $this->kernel->getProjectDir().'/uploads/image_' . $resource . $entity . $property . '.' . $extension;
+
+            $image_data = base64_decode($data);
+
+            file_put_contents($filename, $image_data);
+            return $this->urlGenerator->generate('app.stream_document', ['file' => $this->kernel->getProjectDir().'/uploads/image_' . $resource . $entity . $property . '.' . $extension]);
+        }
+        return null;
     }
 
     public function getGlobals(): array
