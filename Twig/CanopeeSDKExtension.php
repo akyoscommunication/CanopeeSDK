@@ -11,6 +11,7 @@ use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Twig\TwigFunction;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 
@@ -50,20 +51,37 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
     public function getFile(string $resource, int $entity, string $property): mixed
     {
 
-        $result = $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults();
-        if (is_object($result) && property_exists($result, 'file') && $result->file) {
-            list($type, $data) = explode(';', $result->file);
-            list(, $data)      = explode(',', $data);
-            $extension         = explode('/', $type)[1];
+        $name = 'image_' . $resource . $entity . $property;
+        $repertoire = $this->kernel->getProjectDir().'/uploads/';
+        $fileName = $repertoire. $name;
 
-            $filename = $this->kernel->getProjectDir().'/uploads/image_' . $resource . $entity . $property . '.' . $extension;
+        $finder = new Finder();
 
-            $image_data = base64_decode($data);
+        $files = $finder
+            ->in($repertoire)
+            ->files()
+            ->date('since 1 hour ago')
+            ->name($name . '.*');
 
-            file_put_contents($filename, $image_data);
-            return $this->urlGenerator->generate('app.stream_document', ['file' => $this->kernel->getProjectDir().'/uploads/image_' . $resource . $entity . $property . '.' . $extension]);
+        foreach ($files as $file) {
+            $fileName = $file->getRealPath();
         }
-        return null;
+
+        if(!$files->hasResults()){
+            $result = $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults();
+            if (is_object($result) && property_exists($result, 'file') && $result->file) {
+                list($type, $data) = explode(';', $result->file);
+                list(, $data)      = explode(',', $data);
+                $extension         = explode('/', $type)[1];
+
+                $fileName = $fileName . '.' . $extension;
+
+                $image_data = base64_decode($data);
+
+                file_put_contents($fileName, $image_data);
+            }
+        }
+        return $this->urlGenerator->generate('app.stream_document', ['file' => $fileName]);
     }
 
     public function getGlobals(): array
