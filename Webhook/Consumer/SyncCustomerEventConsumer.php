@@ -24,6 +24,6 @@ readonly class SyncCustomerEventConsumer implements ConsumerInterface
     {
         $customerCanopee = $this->serializer->serialize($event->getPayload(), 'json');
         $customerCanopee = json_decode($customerCanopee);
-        $this->canopeeCustomerSyncService->createOrUpdateFormCanopee($customerCanopee);
+        $this->canopeeCustomerSyncService->createOrUpdateFromCanopee($customerCanopee);
     }
 }

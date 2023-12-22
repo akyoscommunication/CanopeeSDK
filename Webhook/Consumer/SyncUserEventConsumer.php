@@ -24,6 +24,6 @@ readonly class SyncUserEventConsumer implements ConsumerInterface
     {
         $userCanopee = $this->serializer->serialize($event->getPayload(), 'json');
         $userCanopee = json_decode($userCanopee);
-        $this->canopeeUserSyncService->createOrUpdateFormCanopee($userCanopee);
+        $this->canopeeUserSyncService->createOrUpdateFromCanopee($userCanopee);
     }
 }

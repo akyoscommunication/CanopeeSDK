@@ -8,6 +8,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Akyos\CanopeeSDK\Service\ProviderService;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 
 class CanopeeUserSyncService
@@ -17,15 +18,17 @@ class CanopeeUserSyncService
         private readonly ContainerInterface $container,
         private readonly RequestStack $requestStack,
         private readonly ProviderService $providerService,
-        private readonly Security $security
+        private readonly Security $security,
+        private readonly TagAwareCacheInterface $canopeeFilePool,
     )
     {
     }
 
-    public function createOrUpdateFormCanopee(?object $userCanopee){
-
-        if(!$user = $this->entityManager->getRepository($this->container->getParameter('entity')['user_entity'])->findOneBy(['uuid' => $userCanopee->id])){
-            $user = new ($this->container->getParameter('entity')['user_entity'])();
+    public function createOrUpdateFromCanopee(?object $userCanopee)
+    {
+        $entityClass = $this->container->getParameter('entity')['user_entity'];
+        if(!$user = $this->entityManager->getRepository($entityClass)->findOneBy(['uuid' => $userCanopee->id])){
+            $user = new ($entityClass)();
             $user->setUuid($userCanopee->id);
         }
 
@@ -49,14 +52,23 @@ class CanopeeUserSyncService
         $user->setModuleToken($userCanopee->moduleToken);
         $user->setUserCanopee(json_encode($userCanopee));
 
+        // clear cache of files
+        $files = [
+            'avatarFile',
+        ];
+        $entityName = explode("\\", $entityClass);
+        foreach ($files as $file) {
+            $this->canopeeFilePool->delete($user->getId().'_'.$file.'_'.end($entityName));
+        }
+
         if(property_exists($userCanopee, 'customer') && $userCanopee->customer !== null){
             $user->setCustomer($this->entityManager->getRepository($this->container->getParameter('entity')['customer_entity'])->findOneBy(['canopeeId' => $userCanopee->customer->id]));
         }
 
         if($userCanopee->deletedState === 'delete'){
-            $this->entityManager->getRepository($this->container->getParameter('entity')['user_entity'])->remove($user, true);
+            $this->entityManager->getRepository($entityClass)->remove($user, true);
         }
-        $this->entityManager->getRepository($this->container->getParameter('entity')['user_entity'])->add($user, true);
+        $this->entityManager->getRepository($entityClass)->add($user, true);
 
         return $user;
     }

@@ -22,19 +22,29 @@ class CanopeeCustomerSyncService
     {
     }
 
-    public function createOrUpdateFormCanopee(?object $customerCanopee){
-
-        if(!$customer = $this->entityManager->getRepository($this->container->getParameter('entity')['customer_entity'])->findOneBy(['canopeeId' => $customerCanopee->id])){
-            $customer = new ($this->container->getParameter('entity')['customer_entity'])();
+    public function createOrUpdateFromCanopee(?object $customerCanopee)
+    {
+        $entityClass = $this->container->getParameter('entity')['customer_entity'];
+        if(!$customer = $this->entityManager->getRepository($entityClass)->findOneBy(['canopeeId' => $customerCanopee->id])){
+            $customer = new ($entityClass)();
             $customer->setCanopeeId($customerCanopee->id);
         }
         $customer->setCustomerCanopee(json_encode($customerCanopee));
 
-        if($customerCanopee->deletedState === 'delete'){
-            $this->entityManager->getRepository($this->container->getParameter('entity')['customer_entity'])->remove($customer, true);
+        $files = [
+            'imageLogo',
+            'imageMinifiedLogo',
+        ];
+        $entityName = explode("\\", $entityClass);
+        foreach ($files as $file) {
+            $this->canopeeFilePool->delete($user->getId().'_'.$file.'_'.end($entityName));
         }
 
-        $this->entityManager->getRepository($this->container->getParameter('entity')['customer_entity'])->add($customer, true);
+        if($customerCanopee->deletedState === 'delete'){
+            $this->entityManager->getRepository($entityClass)->remove($customer, true);
+        }
+
+        $this->entityManager->getRepository($entityClass)->add($customer, true);
 
         return $customer;
     }
