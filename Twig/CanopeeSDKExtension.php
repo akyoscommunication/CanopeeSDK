@@ -3,7 +3,7 @@
 namespace Akyos\CanopeeSDK\Twig;
 
 use Akyos\CanopeeSDK\Service\ModuleService;
-use Akyos\CanopeeSDK\Service\ProviderService;
+use Akyos\CanopeeModuleSDK\Class\Get;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -23,7 +23,6 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly ContainerInterface    $container,
-        private readonly ProviderService       $providerService,
         private readonly RequestStack         $requestStack,
         private readonly KernelInterface      $kernel,
     ) {
@@ -34,7 +33,6 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new TwigFunction('canopee_sdk_path', [$this, 'canopeeSDKPath']),
-            new TwigFunction('new', [$this->providerService, 'new']),
             new TwigFunction('getFile', [$this, 'getFile']),
         ];
     }
@@ -68,7 +66,12 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
         }
 
         if(!$files->hasResults()){
-            $result = $this->providerService->new('file/'.$resource, 'GET')->setPathParams(['id' => $entity])->setQueryParams(['fieldName' => $property])->getResults();
+            $query = (new Get())
+                ->setResource('file/'.$resource)
+                ->setPathParams(['id' => $entity])
+                ->setQueryParams(['fieldName' => $property])
+            ;
+            $result = $this->provider->initialize('canopee')->send($query)->getData();
             if (is_object($result) && property_exists($result, 'file') && $result->file) {
                 list($type, $data) = explode(';', $result->file);
                 list(, $data)      = explode(',', $data);

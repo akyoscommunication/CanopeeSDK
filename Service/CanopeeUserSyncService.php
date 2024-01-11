@@ -7,9 +7,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Akyos\CanopeeSDK\Service\ProviderService;
+use Akyos\CanopeeModuleSDK\Service\ProviderService;
+use Akyos\CanopeeModuleSDK\Class\Get;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
-
 
 class CanopeeUserSyncService
 {
@@ -17,7 +17,7 @@ class CanopeeUserSyncService
         private readonly EntityManagerInterface $entityManager,
         private readonly ContainerInterface $container,
         private readonly RequestStack $requestStack,
-        private readonly ProviderService $providerService,
+        private readonly ProviderService $provider,
         private readonly Security $security,
         private readonly TagAwareCacheInterface $canopeeFilePool,
     )
@@ -79,7 +79,11 @@ class CanopeeUserSyncService
         if($session->get('userCanopee') !== null){
             return null;
         }
-        $userCanopee = $this->providerService->new('users')->setPathParams(['uuid' => $user->getUuid()])->getResults();
+        $query = (new Get())
+            ->setResource('users')
+            ->setPathParams(['uuid' => $user->getUuid()])
+        ;
+        $userCanopee = $this->provider->initialize('canopee')->send($query)->getData();
         $session->set('userCanopee', $userCanopee);
     }
 }

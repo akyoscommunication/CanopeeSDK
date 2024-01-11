@@ -7,8 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Akyos\CanopeeSDK\Service\ProviderService;
-
+use Akyos\CanopeeModuleSDK\Service\ProviderService;
 
 class CanopeeCustomerSyncService
 {

@@ -17,13 +17,6 @@ class Configuration implements ConfigurationInterface
         $treeBuilder
             ->getRootNode()
             ->children()
-            ->arrayNode('api')
-            ->children()
-            ->scalarNode('client_id')->defaultValue('%env(CANOPEESDK_CLIENT_ID)%')->end()
-            ->scalarNode('client_secret')->defaultValue('%env(CANOPEESDK_CLIENT_SECRET)%')->end()
-            ->scalarNode('endpoint')->defaultValue('%env(CANOPEESDK_ENPOINT)%')->end()
-            ->end()
-            ->end()
             ->arrayNode('entity')
             ->children()
             ->scalarNode('user_entity')->defaultValue('%env(CANOPEE_SDK_USER_ENTITY)%')->end()

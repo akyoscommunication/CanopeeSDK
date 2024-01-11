@@ -2,7 +2,8 @@
 
 namespace Akyos\CanopeeSDK\Service;
 
-use Akyos\CanopeeSDK\Service\ProviderService;
+use Akyos\CanopeeModuleSDK\Service\ProviderService;
+use Akyos\CanopeeModuleSDK\Class\Post;
 use Akyos\CanopeeSDK\Enum\LogType;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -12,7 +13,7 @@ class LogService
     public const LOG_DOMAIN = 'log';
 
     public function __construct(
-        private readonly ProviderService $providerService,
+        private readonly ProviderService $provider,
         private readonly TranslatorInterface $translator,
         private readonly ContainerInterface $container,
     ){
@@ -29,10 +30,11 @@ class LogService
             throw new \InvalidArgumentException($this->translator->trans('log.error.tokenTraduction', ['tokenTraduction' => $tokenTraduction], self::LOG_DOMAIN));
         }
 
-        $query = $this->providerService->new('log/new', 'POST');
-        $query->setPathParams([
-            'slug' => $this->container->getParameter('module_slug')
-        ]);
+        $query = (new Post())
+            ->setResource('log/new')
+            ->setPathParams(['slug' => $this->container->getParameter('module_slug')])
+        ;
+
         if($sender instanceof ($this->container->getParameter('entity')['user_entity'])){
             $sender = $sender->getUuid();
         }
@@ -49,6 +51,7 @@ class LogService
             $body['attachement'] = $attachment;
         }
         $query->setBody($body);
-        $result = $query->getResults();
+
+         $this->provider->initialize('canopee')->send($query);
     }
 }
