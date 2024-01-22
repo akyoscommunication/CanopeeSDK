@@ -2,21 +2,17 @@
 
 namespace Akyos\CanopeeSDK\Service;
 
-
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Akyos\CanopeeModuleSDK\Service\ProviderService;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class CanopeeCustomerSyncService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ContainerInterface $container,
-        private readonly RequestStack $requestStack,
-        private readonly ProviderService $providerService,
-        private readonly Security $security
+        private readonly TagAwareCacheInterface $canopeeFilePool,
     )
     {
     }
