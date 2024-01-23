@@ -33,6 +33,8 @@ class Log extends Post implements LogInterface
     {
         $this->prepareQueryParams();
         $this->prepareBody();
+
+        parent::onPreQuery();
     }
 
     public function onSetData(): void
