@@ -16,7 +16,7 @@ class LogService
     ){
     }
 
-    public function add($sender, LogType $type, string $tokenTraduction, array $args, string $attachment = null): void
+    public function add($sender, LogType $type, string $tokenTraduction, array $args, string $attachment = null): \Akyos\CanopeeModuleSDK\Class\AbstractQuery
     {
         $query = $this->log
             ->setSender($sender)
@@ -26,6 +26,6 @@ class LogService
             ->setAttachment($attachment)
         ;
 
-        $this->provider->initialize('canopee')->send($query);
+        return $this->provider->initialize('canopee')->send($query);
     }
 }
