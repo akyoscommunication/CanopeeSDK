@@ -22,8 +22,8 @@ class Log extends Post implements LogInterface
     public ?string $attachment = null;
 
     public function __construct(
-        #[Autowire(service: 'service_container')] private readonly ContainerInterface $container,
-        #[Autowire(service: 'translator.data_collector')] private readonly TranslatorInterface $translator,
+        private readonly ContainerInterface $container,
+        private readonly TranslatorInterface $translator,
     )
     {
         parent::__construct('logs');
