@@ -122,7 +122,7 @@ class Log extends Post implements LogInterface
     {
         $queryParams = [
             'fromModule' => $this->container->getParameter('module_slug'),
-            'sender' => $this->sender?->getUuid(),
+            'sender' => is_string($this->sender) ? $this->sender : $this->sender->getUuid(),
             'type' => $this->type->value,
             'tokenTraduction' => $this->tokenTraduction,
         ];
