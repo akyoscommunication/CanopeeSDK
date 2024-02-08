@@ -18,10 +18,10 @@ final readonly class RepositoryService
     ){
     }
 
-    public function currentCustomer(QueryBuilder $qb, string $alias): Comparison
+    public function currentCustomer(QueryBuilder $qb, string $alias, ?User $user = null): Comparison
     {
         /** @var User $user */
-        $user = $this->security->getUser();
+        $user ??= $this->security->getUser();
         $qb->setParameter('customer', $user->getCustomer());
 
         return $qb->expr()->eq($alias.'.customer', ':customer');
