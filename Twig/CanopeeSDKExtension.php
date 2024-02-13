@@ -3,6 +3,7 @@
 namespace Akyos\CanopeeSDK\Twig;
 
 use Akyos\CanopeeSDK\Service\ModuleService;
+use Akyos\CanopeeModuleSDK\Service\ProviderService;
 use Akyos\CanopeeModuleSDK\Class\Get;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -25,6 +26,7 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
         private readonly ContainerInterface    $container,
         private readonly RequestStack         $requestStack,
         private readonly KernelInterface      $kernel,
+        private readonly ProviderService      $provider
     ) {
         $this->cache = new TagAwareAdapter(new FilesystemAdapter());
     }
@@ -34,6 +36,7 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
         return [
             new TwigFunction('canopee_sdk_path', [$this, 'canopeeSDKPath']),
             new TwigFunction('getFile', [$this, 'getFile']),
+            new TwigFunction('notifications', [$this, 'notifications']),
         ];
     }
 
@@ -85,6 +88,15 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
             }
         }
         return $this->urlGenerator->generate('app.stream_document', ['file' => $fileName]);
+    }
+
+    public function notifications(): string
+    {
+        $query = (new Get())
+            ->setResource('notifications')
+        ;
+        $result = $this->provider->initialize('canopee')->send($query)->getData();
+        return json_encode($result);
     }
 
     public function getGlobals(): array

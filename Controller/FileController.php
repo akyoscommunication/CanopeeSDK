@@ -14,6 +14,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Akyos\CanopeeModuleSDK\Service\ProviderService;
+use Akyos\CanopeeModuleSDK\Class\Patch;
 
 class FileController extends AbstractController
 {
@@ -49,5 +51,4 @@ class FileController extends AbstractController
             )
         ;
     }
-
 }
