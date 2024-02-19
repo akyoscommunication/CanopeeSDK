@@ -34,6 +34,14 @@ class CanopeeSDKExtension extends Extension implements PrependExtensionInterface
     {
         $bundles = $container->getParameter('kernel.bundles');
 
+        if (isset($bundles['TwigBundle'])) {
+            $container->prependExtensionConfig('twig', [
+                'paths' => [
+                    __DIR__ . "/../Resources/views" => 'CanopeeSDK',
+                ],
+            ]);
+        }
+
         if (isset($bundles['FrameworkBundle'])) {
             $container->prependExtensionConfig('framework', [
                 'cache' => [

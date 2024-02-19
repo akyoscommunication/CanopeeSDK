@@ -1,0 +1,44 @@
+<div {{ attributes.defaults({
+    class: 'l-grid l-grid--1'
+}) }}>
+
+    <div class="l-grid l-grid--1">
+        <div class="l-grid-col--9">
+            {{ form_start(form) }}
+            {{ form_widget(form) }}
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div class="l-grid l-grid--1">
+
+        <twig:title
+                tag="h3">{{ 'faq.title'|trans({}, 'faq') }} {{ 'app'|trans({}, 'common') }}</twig:title>
+
+        {% for category in  this.faq.categories %}
+            {% if category.questions|length %}
+                <fieldset>
+                    <twig:title tag="legend">{{ category.name|upper }}</twig:title>
+                    <div class="l-grid l-grid--1">
+                        {% for question in category.questions %}
+                            <div class="l-grid l-grid--1 align-items-center">
+                                <div class="l-grid-col--11">
+                                    <twig:accordion>
+                                        {% block header %}
+                                            {% if not question.published %}
+                                                <i class="icomoon-eye-slash"></i>
+                                            {% endif %}
+                                            {{ question.title }}
+                                        {% endblock %}
+                                        {{ question.answer|raw }}
+                                    </twig:accordion>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+            {% endif %}
+        {% endfor %}
+
+    </div>
+</div>

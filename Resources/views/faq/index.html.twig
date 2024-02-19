@@ -1,0 +1,17 @@
+{% extends 'app/layout/layout.html.twig' %}
+{% trans_default_domain 'faq' %}
+
+{% block title %}{{ parent() }} | {{ 'faq'|trans }}{% endblock %}
+
+{% block header %}
+    {% embed 'app/layout/header.html.twig' %}
+        {% block title %}
+            <twig:title>{{ 'faq.title'|trans({}, 'faq') }}</twig:title>{% endblock %}
+    {% endembed %}
+{% endblock %}
+
+{% block content %}
+
+    <twig:faq.list/>
+
+{% endblock %}
