@@ -3,7 +3,7 @@
 namespace Akyos\CanopeeSDK\Controller\Faq\components;
 
 use Akyos\CanopeeModuleSDK\Service\ProviderService;
-use Akyos\CanopeeSDK\Form\FaqSearchType;
+use Akyos\CanopeeSDK\Form\Faq\FaqSearchType;
 use Akyos\CanopeeModuleSDK\Class\Get;
 use App\Entity\Customer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -53,7 +53,9 @@ final class FaqListComponent extends AbstractController
             ->setResource('question_categories')
             ->setQueryParams([
                 'module.slug' => $this->parameterBag->get('module_slug'),
-            ]);
+                'customer.id' => $customer->getCustomerCanopee()->id,
+            ])
+        ;
 
         $this->faq['title'] = $this->translator->trans('app', [], 'common');
         $this->faq['categories'] = $this->provider->initialize('canopee')->send($query)->getData();

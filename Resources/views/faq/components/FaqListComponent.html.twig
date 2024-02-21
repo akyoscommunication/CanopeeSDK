@@ -2,13 +2,7 @@
     class: 'l-grid l-grid--1'
 }) }}>
 
-    <div class="l-grid l-grid--1">
-        <div class="l-grid-col--9">
-            {{ form_start(form) }}
-            {{ form_widget(form) }}
-            {{ form_end(form) }}
-        </div>
-    </div>
+    {{ form(form, {attr: {class: 'l-grid-col--3 l-grid-col--12:lg'}}) }}
 
     <div class="l-grid l-grid--1">
 
