@@ -32,7 +32,7 @@ class CanopeeCustomerSyncService
         ];
         $entityName = explode("\\", $entityClass);
         foreach ($files as $file) {
-            $this->canopeeFilePool->delete($user->getId().'_'.$file.'_'.end($entityName));
+            $this->canopeeFilePool->delete($customer->getId().'_'.$file.'_'.end($entityName));
         }
 
         if($customerCanopee->deletedState === 'delete'){
