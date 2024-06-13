@@ -17,7 +17,8 @@ class Notification extends AbstractQueryObject implements NotificationInterface
     public mixed $name;
     public mixed $description;
     public string $target;
-    public ?int $user = null; 
+    public ?int $user = null;
+    public ?bool $actionNeeded = false;
 
     public function __construct()
     {
@@ -109,6 +110,18 @@ class Notification extends AbstractQueryObject implements NotificationInterface
         return $this;
     }
 
+    public function getActionNeeded(): ?bool
+    {
+        return $this->actionNeeded;
+    }
+
+    public function setActionNeeded(?bool $actionNeeded): static
+    {
+        $this->actionNeeded = $actionNeeded;
+
+        return $this;
+    }
+
     public function dataTransform(ContainerInterface $container): array
     {
         $translator = $container->get('translator');
@@ -129,6 +142,7 @@ class Notification extends AbstractQueryObject implements NotificationInterface
             'description' => $this->description,
             'target' => $this->target,
             'user' => $this->user,
+            'actionNeeded' => $this->actionNeeded,
         ];
     }
 }
