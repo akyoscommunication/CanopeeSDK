@@ -11,15 +11,15 @@ use Akyos\CanopeeModuleSDK\Service\ProviderService;
 use Akyos\CanopeeModuleSDK\Class\Get;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
-class CanopeeUserSyncService
+readonly class CanopeeUserSyncService
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly ContainerInterface $container,
-        private readonly RequestStack $requestStack,
-        private readonly ProviderService $provider,
-        private readonly Security $security,
-        private readonly TagAwareCacheInterface $canopeeFilePool,
+        private EntityManagerInterface $entityManager,
+        private ContainerInterface     $container,
+        private RequestStack           $requestStack,
+        private ProviderService        $provider,
+        private Security               $security,
+        private TagAwareCacheInterface $canopeeFilePool,
     )
     {
     }
@@ -27,26 +27,57 @@ class CanopeeUserSyncService
     public function createOrUpdateFromCanopee(?object $userCanopee)
     {
         $entityClass = $this->container->getParameter('entity')['user_entity'];
-        if(!$user = $this->entityManager->getRepository($entityClass)->findOneBy(['uuid' => $userCanopee->id])){
+        if(!$entityClass) {
+            $entityClass = 'App\Entity\User';
+        }
+        $userRepository = $this->entityManager->getRepository($entityClass);
+
+        if(!$user = $userRepository->findOneBy(['uuid' => $userCanopee->id])) {
             $user = new ($entityClass)();
             $user->setUuid($userCanopee->id);
         }
 
-        $moduleRoles = array_filter((array) $userCanopee->moduleRoles, function($role){
-            return $role->module->slug === $this->container->getParameter('module_slug');
+        $userAccessRights = array_filter((array) $userCanopee->userAccessRights, function($userAccessRight) {
+            return $userAccessRight->module->slug === $this->container->getParameter('module_slug');
         });
 
-        $moduleRoles = array_map(function($role) use ($userCanopee){
-            return $role->value;
-        }, $moduleRoles);
+        $userAccessRightsEntityClass = $this->container->getParameter('entity')['user_access_right_entity'];
+        if(!$userAccessRightsEntityClass) {
+            $entityClass = 'App\Entity\UserAccessRight';
+        }
+        $userAccessRightRepository = $this->entityManager->getRepository($userAccessRightsEntityClass);
 
-        if(in_array('ROLE_SUPER_ADMIN', $userCanopee->roles)){
+        $customerEntityClass = $this->container->getParameter('entity')['customer_entity'];
+        if(!$customerEntityClass) {
+            $customerEntityClass = 'App\Entity\Customer';
+        }
+        $customerRepository = $this->entityManager->getRepository($customerEntityClass);
+
+        foreach($userAccessRights as $userAccessRight) {
+            $existingUserAccessRight = $userAccessRightRepository->findOneBy([
+                'user' => $user,
+                'accessRight' => $userAccessRight->accessCategory->name,
+                'customer' => $userAccessRight->customer->id,
+            ]);
+            if(!$existingUserAccessRight) {
+                $newUserAccessRight = (new ($userAccessRightsEntityClass)())
+                    ->setUser($user)
+                    ->setAccessRight($userAccessRight->accessCategory->name)
+                ;
+
+                if(property_exists($userAccessRight, 'customer') && $userAccessRight->customer !== null) {
+                    $userAccessRight->setCustomer($customerRepository->findOneBy(['canopeeId' => $userAccessRight->customer->id]));
+                }
+
+                $userAccessRightRepository->add($newUserAccessRight, false);
+            }
+        }
+
+        if(in_array('ROLE_SUPER_ADMIN', $userCanopee->roles)) {
             $user->setRoles(['ROLE_SUPER_ADMIN']);
         }
-        else if(in_array('ROLE_ADMIN', $userCanopee->roles)){
-            $user->setRoles(['ROLE_ADMIN']);
-        } else {
-            $user->setRoles($moduleRoles);
+        else {
+            $user->setRoles(['ROLE_USER']);
         }
 
         $user->setModuleToken($userCanopee->moduleToken);
@@ -61,14 +92,10 @@ class CanopeeUserSyncService
             $this->canopeeFilePool->delete($user->getId().'_'.$file.'_'.end($entityName));
         }
 
-        if(property_exists($userCanopee, 'customer') && $userCanopee->customer !== null){
-            $user->setCustomer($this->entityManager->getRepository($this->container->getParameter('entity')['customer_entity'])->findOneBy(['canopeeId' => $userCanopee->customer->id]));
+        if($userCanopee->deletedState === 'delete') {
+            $userRepository->remove($user, true);
         }
-
-        if($userCanopee->deletedState === 'delete'){
-            $this->entityManager->getRepository($entityClass)->remove($user, true);
-        }
-        $this->entityManager->getRepository($entityClass)->add($user, true);
+        $userRepository->add($user, true);
 
         return $user;
     }
