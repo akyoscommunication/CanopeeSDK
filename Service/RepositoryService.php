@@ -2,27 +2,29 @@
 
 namespace Akyos\CanopeeSDK\Service;
 
-use Akyos\CanopeeModuleSDK\Service\ProviderService;
-use Akyos\CanopeeModuleSDK\Class\Post;
-use App\Entity\User;
+use App\Entity\UserAccessRight;
 use Doctrine\ORM\Query\Expr\Comparison;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 final readonly class RepositoryService
 {
     public function __construct(
-        private Security $security,
+        private RequestStack $requestStack,
     ){
     }
 
-    public function currentCustomer(QueryBuilder $qb, string $alias, ?User $user = null): Comparison
+    public function currentCustomer(QueryBuilder $qb, string $alias, ?UserAccessRight $userAccessRight = null): Comparison
     {
-        /** @var User $user */
-        $user ??= $this->security->getUser();
-        $qb->setParameter('customer', $user->getCustomer());
+        if(!$userAccessRight) {
+            $userAccessRights = $this->requestStack->getSession()->get('userAccessRights');
+        }
+
+        if($userAccessRights) {
+            $qb->setParameter('customer', $userAccessRights->getCustomer());
+        } else {
+            $qb->setParameter('customer', null);
+        }
 
         return $qb->expr()->eq($alias.'.customer', ':customer');
     }
