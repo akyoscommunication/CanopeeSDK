@@ -20,12 +20,10 @@ readonly class UserAccessRightSubscriber implements EventSubscriberInterface
      */
     public function onKernelController(ControllerEvent $event): void
     {
+        $currentRoute = $event->getRequest()->attributes->get('_route');
+
         $user = $this->security->getUser();
         $userAccessRights = $this->userAccessRightsService->getUserAccessRights($user);
-
-        if (!count($userAccessRights)) {
-            throw new \Exception('You do not have access to this module');
-        }
 
         $session = $event->getRequest()->getSession();
         if(count($userAccessRights) === 1) {
