@@ -20,22 +20,24 @@ readonly class CanopeeUserSyncService
         private ProviderService        $provider,
         private Security               $security,
         private TagAwareCacheInterface $canopeeFilePool,
+        private UserAccessRightsService $userAccessRightService,
     )
     {
     }
 
     public function createOrUpdateFromCanopee(?object $userCanopee)
     {
-        dump($userCanopee);
         $entityClass = $this->container->getParameter('entity')['user_entity'];
         if(!$entityClass) {
             $entityClass = 'App\Entity\User';
         }
         $userRepository = $this->entityManager->getRepository($entityClass);
 
-        if(!$user = $userRepository->findOneBy(['uuid' => $userCanopee->id])) {
+        $user = $userRepository->findByUuid($userCanopee->id)->getQuery()->getOneOrNullResult();
+        if(!$user) {
             $user = new ($entityClass)();
             $user->setUuid($userCanopee->id);
+            $userRepository->add($user, true);
         }
 
         $userAccessRights = [];
@@ -58,40 +60,36 @@ readonly class CanopeeUserSyncService
         $customerRepository = $this->entityManager->getRepository($customerEntityClass);
 
         if(!count($userAccessRights)) {
-            $existingUserAccessRight = $userAccessRightRepository->findBy([
-                'user' => $user,
-            ]);
+            $existingUserAccessRight = $this->userAccessRightService->getUserAccessRights($user);
             foreach ($existingUserAccessRight as $userAccessRight) {
                 $userAccessRightRepository->remove($userAccessRight, false);
             }
         }
         foreach($userAccessRights as $userAccessRight) {
-            $existingUserAccessRight = $userAccessRightRepository->findOneBy([
-                'user' => $user,
-                'accessCategory' => $userAccessRight->accessCategory->name,
-                'customer' => $userAccessRight->customer->id,
-            ]);
-            if(!$existingUserAccessRight) {
+            $customer = null;
+            if(property_exists($userAccessRight, 'customer') && $userAccessRight->customer !== null) {
+                $customer = $customerRepository->findByCanopeeId($userAccessRight->customer->id)->getQuery()->getOneOrNullResult();
+            }
+            $existingUserAccessRights = $this->userAccessRightService->getUserAccessRights($user, $userAccessRight->accessCategory->name, $customer);
+
+            if(!count($existingUserAccessRights)) {
                 $newUserAccessRight = (new ($userAccessRightsEntityClass)())
                     ->setUser($user)
                     ->setActive($userAccessRight->active)
                     ->setRoles(array_map(fn($role) => $role->value, $userAccessRight->roles))
                     ->setAccessCategory($userAccessRight->accessCategory->name)
                     ->setDeletedState($userAccessRight->deletedState)
+                    ->setCustomer($customer)
                 ;
-
-                if(property_exists($userAccessRight, 'customer') && $userAccessRight->customer !== null) {
-                    $newUserAccessRight->setCustomer($customerRepository->findOneBy(['canopeeId' => $userAccessRight->customer->id]));
-                }
 
                 $userAccessRightRepository->add($newUserAccessRight, false);
             } else {
-                $existingUserAccessRight
+                $existingUserAccessRights[0]
                     ->setRoles(array_map(fn($role) => $role->value, $userAccessRight->roles))
                     ->setActive($userAccessRight->active)
                     ->setDeletedState($userAccessRight->deletedState)
                 ;
-                $userAccessRightRepository->add($existingUserAccessRight, false);
+                $userAccessRightRepository->add($existingUserAccessRights[0], false);
             }
         }
 
