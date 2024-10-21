@@ -2,8 +2,10 @@
 
 namespace Akyos\CanopeeSDK\Service;
 
+use App\Entity\UserAccessRight;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 readonly class UserAccessRightsService
 {
@@ -15,7 +17,19 @@ readonly class UserAccessRightsService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private ContainerInterface     $container,
+        private RequestStack $requestStack,
     ) {
+    }
+
+    public function getLoggedUserAccessRight(): ?UserAccessRight
+    {
+        $hasUserAccessRight = $this->requestStack->getSession()->has('userAccessRights');
+
+        if($hasUserAccessRight) {
+            return $this->requestStack->getSession()->get('userAccessRights');
+        }
+
+        return null;
     }
 
     // Get user's userAccessRights

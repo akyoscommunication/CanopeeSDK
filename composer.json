@@ -31,7 +31,7 @@
 		"firebase/php-jwt": "^6.4",
 		"symfony/security-core": "*",
 		"league/oauth2-client": "^2.7",
-		"akyos/canopee-module-sdk": "1.0"
+		"akyos/canopee-module-sdk": "dev-master"
     },
     "autoload": {
         "psr-4": { "Akyos\\CanopeeSDK\\": "" },
