@@ -5,6 +5,7 @@ namespace Akyos\CanopeeSDK\Twig;
 use Akyos\CanopeeSDK\Service\ModuleService;
 use Akyos\CanopeeModuleSDK\Service\ProviderService;
 use Akyos\CanopeeModuleSDK\Class\Get;
+use Akyos\CanopeeSDK\Service\UserAccessRightsService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -26,7 +27,8 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
         private readonly ContainerInterface    $container,
         private readonly RequestStack         $requestStack,
         private readonly KernelInterface      $kernel,
-        private readonly ProviderService      $provider
+        private readonly ProviderService      $provider,
+        private readonly UserAccessRightsService $userAccessRightsService,
     ) {
         $this->cache = new TagAwareAdapter(new FilesystemAdapter());
     }
@@ -37,6 +39,7 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('canopee_sdk_path', [$this, 'canopeeSDKPath']),
             new TwigFunction('getFile', [$this, 'getFile']),
             new TwigFunction('notifications', [$this, 'notifications']),
+            new TwigFunction('currentUserAccessRight', [$this->userAccessRightsService, 'getLoggedUserAccessRight']),
         ];
     }
 
@@ -76,8 +79,8 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
             ;
             $result = $this->provider->initialize('canopee')->send($query)->getData();
             if (is_object($result) && property_exists($result, 'file') && $result->file) {
-                list($type, $data) = explode(';', $result->file);
-                list(, $data)      = explode(',', $data);
+                [$type, $data] = explode(';', $result->file);
+                [, $data]      = explode(',', $data);
                 $extension         = explode('/', $type)[1];
 
                 $fileName = $fileName . '.' . $extension;

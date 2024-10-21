@@ -3,6 +3,7 @@
 namespace Akyos\CanopeeSDK\Service;
 
 use App\Entity\UserAccessRight;
+use App\Repository\UserAccessRightRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -18,18 +19,32 @@ readonly class UserAccessRightsService
         private EntityManagerInterface $entityManager,
         private ContainerInterface     $container,
         private RequestStack $requestStack,
+        private UserAccessRightRepository $userAccessRightRepository,
     ) {
     }
 
-    public function getLoggedUserAccessRight(): ?UserAccessRight
+    public function getLoggedUserAccessRight(): mixed
     {
+        $userAccessRightClass = $this->container->getParameter('entity')['user_access_right_entity'];
         $hasUserAccessRight = $this->requestStack->getSession()->has('userAccessRights');
 
         if($hasUserAccessRight) {
-            return $this->requestStack->getSession()->get('userAccessRights');
+            $userAccessRightId = $this->requestStack->getSession()->get('userAccessRights');
+            return $this->entityManager->getRepository($userAccessRightClass)->findById($userAccessRightId)->getQuery()->getOneOrNullResult();
         }
 
         return null;
+    }
+
+    public function setLoggedUserAccessRight(mixed $userAccessRight = null): mixed
+    {
+        if($userAccessRight) {
+            $this->requestStack->getSession()->set('userAccessRights', $userAccessRight->getId());
+        } else {
+            $this->requestStack->getSession()->remove('userAccessRights');
+        }
+
+        return $userAccessRight;
     }
 
     // Get user's userAccessRights
