@@ -25,9 +25,10 @@ readonly class CanopeeCustomerSyncService
         }
         $customerRepository = $this->entityManager->getRepository($customerEntityClass);
 
-        if(!$customer = $customerRepository->findOneBy(['canopeeId' => $customerCanopee->id])){
+        if(!$customer = $customerRepository->findByCanopeeId($customerCanopee->id)->getQuery()->getOneOrNullResult()) {
             $customer = new ($customerEntityClass)();
             $customer->setCanopeeId($customerCanopee->id);
+            $customerRepository->add($customer, true);
         }
 
         $customerAccessRights = array_filter((array) $customerCanopee->customerAccessRights, function($customerAccessRight) {
@@ -41,17 +42,14 @@ readonly class CanopeeCustomerSyncService
         $customerAccessRightRepository = $this->entityManager->getRepository($customerAccessRightsEntityClass);
 
         foreach($customerAccessRights as $customerAccessRight) {
-            $existingCustomerAccessRight = $customerAccessRightRepository->findOneBy([
-                'accessRight' => $customerAccessRight->accessCategory->name,
-                'customer' => $customer,
-            ]);
+            $existingCustomerAccessRight = $customerAccessRightRepository->findByCustomer($customer, null ,$customerAccessRight->accessCategory->name)->getQuery()->getOneOrNullResult();
             if(!$existingCustomerAccessRight) {
                 $newCustomerAccessRight = (new ($customerAccessRightsEntityClass)())
-                    ->setCustomer($customer)
-                    ->setAccessRight($customerAccessRight->accessCategory->name)
+                    ->setBeneficiaryCustomer($customer)
+                    ->setAccessCategory($customerAccessRight->accessCategory->name)
                 ;
 
-                $customerAccessRightRepository->add($newCustomerAccessRight, false);
+                $customerAccessRightRepository->add($newCustomerAccessRight, true);
             }
         }
 

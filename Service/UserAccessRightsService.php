@@ -29,7 +29,8 @@ readonly class UserAccessRightsService
         $hasUserAccessRight = $this->requestStack->getSession()->has('userAccessRights');
 
         if($hasUserAccessRight) {
-            $userAccessRightId = $this->requestStack->getSession()->get('userAccessRights');
+            $userAccessRightInSession = $this->requestStack->getSession()->get('userAccessRights');
+            $userAccessRightId = is_object($userAccessRightInSession) ? $userAccessRightInSession->getId() : $userAccessRightInSession;
             return $this->entityManager->getRepository($userAccessRightClass)->findById($userAccessRightId)->getQuery()->getOneOrNullResult();
         }
 
@@ -39,7 +40,7 @@ readonly class UserAccessRightsService
     public function setLoggedUserAccessRight(mixed $userAccessRight = null): mixed
     {
         if($userAccessRight) {
-            $this->requestStack->getSession()->set('userAccessRights', $userAccessRight->getId());
+            $this->requestStack->getSession()->set('userAccessRights', $userAccessRightId);
         } else {
             $this->requestStack->getSession()->remove('userAccessRights');
         }
