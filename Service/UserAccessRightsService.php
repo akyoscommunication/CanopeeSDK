@@ -2,7 +2,6 @@
 
 namespace Akyos\CanopeeSDK\Service;
 
-use App\Entity\UserAccessRight;
 use App\Repository\UserAccessRightRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -27,7 +26,6 @@ readonly class UserAccessRightsService
     {
         $userAccessRightClass = $this->container->getParameter('entity')['user_access_right_entity'];
         $hasUserAccessRight = $this->requestStack->getSession()->has('userAccessRights');
-
         if($hasUserAccessRight) {
             $userAccessRightInSession = $this->requestStack->getSession()->get('userAccessRights');
             $userAccessRightId = is_object($userAccessRightInSession) ? $userAccessRightInSession->getId() : $userAccessRightInSession;
@@ -40,7 +38,7 @@ readonly class UserAccessRightsService
     public function setLoggedUserAccessRight(mixed $userAccessRight = null): mixed
     {
         if($userAccessRight) {
-            $this->requestStack->getSession()->set('userAccessRights', $userAccessRightId);
+            $this->requestStack->getSession()->set('userAccessRights', $userAccessRight);
         } else {
             $this->requestStack->getSession()->remove('userAccessRights');
         }

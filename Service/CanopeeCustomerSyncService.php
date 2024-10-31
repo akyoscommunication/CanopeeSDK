@@ -25,9 +25,9 @@ readonly class CanopeeCustomerSyncService
         }
         $customerRepository = $this->entityManager->getRepository($customerEntityClass);
 
-        if(!$customer = $customerRepository->findByCanopeeId($customerCanopee->id)->getQuery()->getOneOrNullResult()) {
+        if(!$customer = $customerRepository->findById($customerCanopee->id)->getQuery()->getOneOrNullResult()) {
             $customer = new ($customerEntityClass)();
-            $customer->setCanopeeId($customerCanopee->id);
+            $customer->setId($customerCanopee->id);
             $customerRepository->add($customer, true);
         }
 

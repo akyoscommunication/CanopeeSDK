@@ -7,6 +7,7 @@ use Akyos\CanopeeModuleSDK\Service\ProviderService;
 use Akyos\CanopeeSDK\Class\LogInterface;
 use Akyos\CanopeeSDK\Enum\LogType;
 use App\Entity\User;
+use App\Entity\UserAccessRight;
 
 class LogService
 {
@@ -18,16 +19,17 @@ class LogService
     ){
     }
 
-    public function add($sender, LogType $type, string $tokenTraduction, array $args, string $attachment = null, ?User $user = null): AbstractQuery
+    public function add($sender, LogType $type, string $tokenTraduction, array $args, UserAccessRight $context, string $attachment = null, ?User $user = null): AbstractQuery
     {
         $query = $this->log
             ->setSender($sender)
             ->setType($type)
             ->setArgs($args)
+            ->setContext($context)
             ->setTokenTraduction($tokenTraduction)
             ->setAttachment($attachment)
         ;
-
+        dump($query);
         return $this->provider->initialize('canopee', $user)->send($query);
     }
 }
