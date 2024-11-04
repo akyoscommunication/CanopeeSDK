@@ -161,7 +161,7 @@ readonly class UserAccessRightsService
                 $toString = $this->translator->trans($userAccessRight->getAccessCategory(), [], 'user.access_type');
                 break;
             case $this::CATEGORY_COLLABORATOR:
-                $toString = $this->translator->trans($userAccessRight->getAccessCategory(), [], 'user.access_type') . ' ' . $userAccessRight->getCustomer()?->customerCanopee?->legalName;
+                $toString = $this->translator->trans($userAccessRight->getAccessCategory(), [], 'user.access_type') . ' ' . $userAccessRight->getCustomer()?->getCustomerCanopee()?->legalName;
                 break;
         }
 
