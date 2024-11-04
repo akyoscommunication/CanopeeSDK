@@ -150,7 +150,7 @@ readonly class UserAccessRightsService
     }
 
     // String representation of the user's access rights
-    public function toString(UserAccessRight $userAccessRight): string
+    public function toString(mixed $userAccessRight): string
     {
         $toString = '';
 
@@ -161,7 +161,7 @@ readonly class UserAccessRightsService
                 $toString = $this->translator->trans($userAccessRight->getAccessCategory(), [], 'user.access_type');
                 break;
             case $this::CATEGORY_COLLABORATOR:
-                $toString = $this->translator->trans($userAccessRight->getAccessCategory(), [], 'user.access_type') . ' ' . $userAccessRight->getCustomer()?->getLegalName();
+                $toString = $this->translator->trans($userAccessRight->getAccessCategory(), [], 'user.access_type') . ' ' . $userAccessRight->getCustomer()?->customerCanopee?->legalName;
                 break;
         }
 
