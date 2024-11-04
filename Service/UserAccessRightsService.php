@@ -7,6 +7,7 @@ use App\Repository\UserAccessRightRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class UserAccessRightsService
 {
@@ -20,6 +21,7 @@ readonly class UserAccessRightsService
         private ContainerInterface     $container,
         private RequestStack $requestStack,
         private UserAccessRightRepository $userAccessRightRepository,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -147,5 +149,24 @@ readonly class UserAccessRightsService
         }
 
         return true;
+    }
+
+    // String representation of the user's access rights
+    public function toString(UserAccessRight $userAccessRight): string
+    {
+        $toString = '';
+
+        switch ($userAccessRight->getAccessCategory()) {
+            case $this::CATEGORY_PARTNER:
+            case $this::CATEGORY_PUBLIC:
+            case $this::CATEGORY_SUPER_ADMIN:
+                $toString = $this->translator->trans($userAccessRight->getAccessCategory(), [], 'user.access_type');
+                break;
+            case $this::CATEGORY_COLLABORATOR:
+                $toString = $this->translator->trans($userAccessRight->getAccessCategory(), [], 'user.access_type') . ' ' . $userAccessRight->getCustomer()?->getLegalName();
+                break;
+        }
+
+        return $toString;
     }
 }
