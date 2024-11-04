@@ -33,10 +33,10 @@ readonly class CanopeeUserSyncService
         }
         $userRepository = $this->entityManager->getRepository($entityClass);
 
-        $user = $userRepository->findByUuid($userCanopee->id)->getQuery()->getOneOrNullResult();
+        $user = $userRepository->findById($userCanopee->id)->getQuery()->getOneOrNullResult();
         if(!$user) {
             $user = new ($entityClass)();
-            $user->setUuid($userCanopee->id);
+            $user->setId($userCanopee->id);
             $userRepository->add($user, true);
         }
 
@@ -68,12 +68,13 @@ readonly class CanopeeUserSyncService
         foreach($userAccessRights as $userAccessRight) {
             $customer = null;
             if(property_exists($userAccessRight, 'customer') && $userAccessRight->customer !== null) {
-                $customer = $customerRepository->findByCanopeeId($userAccessRight->customer->id)->getQuery()->getOneOrNullResult();
+                $customer = $customerRepository->findById($userAccessRight->customer->id)->getQuery()->getOneOrNullResult();
             }
             $existingUserAccessRights = $this->userAccessRightService->getUserAccessRights($user, $userAccessRight->accessCategory->name, $customer);
 
             if(!count($existingUserAccessRights)) {
                 $newUserAccessRight = (new ($userAccessRightsEntityClass)())
+                    ->setId($userAccessRight->id)
                     ->setUser($user)
                     ->setActive($userAccessRight->active)
                     ->setRoles(array_map(fn($role) => $role->value, $userAccessRight->roles))
@@ -128,7 +129,7 @@ readonly class CanopeeUserSyncService
         }
         $query = (new Get())
             ->setResource('users')
-            ->setPathParams(['uuid' => $user->getUuid()])
+            ->setPathParams(['id' => $user->getId()])
         ;
         $userCanopee = $this->provider->initialize('canopee')->send($query)->getData();
         $session->set('userCanopee', $userCanopee);

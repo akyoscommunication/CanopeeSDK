@@ -5,6 +5,7 @@ namespace Akyos\CanopeeSDK\Class;
 use Akyos\CanopeeModuleSDK\Class\Post;
 use Akyos\CanopeeSDK\Class\LogInterface;
 use Akyos\CanopeeSDK\Enum\LogType;
+use App\Entity\UserAccessRight;
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -15,6 +16,7 @@ class Log extends Post implements LogInterface
     public const LOG_DOMAIN = 'log';
 
     public mixed $sender = null;
+    public UserAccessRight|null $context = null;
     public LogType $type;
     public ?string $tokenTraduction = null;
     public ?array $args = [];
@@ -52,7 +54,7 @@ class Log extends Post implements LogInterface
     public function setSender(mixed $sender): self
     {
         if($this->sender instanceof ($this->container->getParameter('entity')['user_entity'])){
-            $this->sender = $this->sender->getUuid();
+            $this->sender = $this->sender->getId();
         } else {
             $this->sender = $sender;
         }
@@ -122,8 +124,9 @@ class Log extends Post implements LogInterface
     {
         $queryParams = [
             'fromModule' => $this->container->getParameter('module_slug'),
-            'sender' => is_string($this->sender) ? $this->sender : $this->sender->getUuid(),
+            'sender' => is_string($this->sender) ? $this->sender : $this->sender->getId(),
             'type' => $this->type->value,
+            'context' => ['customer' => $this->context->getCustomer()->getId(), 'user' => $this->context->getUser()->getId()],
             'tokenTraduction' => $this->tokenTraduction,
         ];
 
@@ -143,5 +146,16 @@ class Log extends Post implements LogInterface
         $this->body = $body;
 
         return $this;
+    }
+
+    public function setContext(mixed $context): Log
+    {
+        $this->context = $context;
+        return $this;
+    }
+
+    public function getContext(): mixed
+    {
+        return $this->context;
     }
 }
