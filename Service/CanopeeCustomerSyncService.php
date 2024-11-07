@@ -46,6 +46,7 @@ readonly class CanopeeCustomerSyncService
             if(!$existingCustomerAccessRight) {
                 $newCustomerAccessRight = (new ($customerAccessRightsEntityClass)())
                     ->setBeneficiaryCustomer($customer)
+                    ->setId($customerAccessRight->id)
                     ->setAccessCategory($customerAccessRight->accessCategory->name)
                 ;
 
