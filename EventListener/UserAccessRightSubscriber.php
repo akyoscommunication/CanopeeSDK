@@ -23,6 +23,9 @@ readonly class UserAccessRightSubscriber implements EventSubscriberInterface
         $currentRoute = $event->getRequest()->attributes->get('_route');
 
         $user = $this->security->getUser();
+        if(!$user) {
+            return;
+        }
         $userAccessRights = $this->userAccessRightsService->getUserAccessRights($user);
 
         $session = $event->getRequest()->getSession();
