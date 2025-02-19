@@ -29,7 +29,7 @@ class LogService
             ->setTokenTraduction($tokenTraduction)
             ->setAttachment($attachment)
         ;
-        dump($query);
+
         return $this->provider->initialize('canopee', $user)->send($query);
     }
 }
