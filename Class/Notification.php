@@ -126,6 +126,22 @@ class Notification extends AbstractQueryObject implements NotificationInterface
     {
         $translator = $container->get('translator');
 
+        	if (!$this->name instanceof CanopeeTranslatableMessage) {
+			$this->name = new CanopeeTranslatableMessage(
+				$this->name->message,
+				$this->name->parameters,
+				$this->name->domain,
+			);
+		}
+
+		if (!$this->description instanceof CanopeeTranslatableMessage) {
+			$this->description = new CanopeeTranslatableMessage(
+				$this->description->message,
+				$this->description->parameters,
+				$this->description->domain,
+			);
+		}
+        
         $this->name = (object)$this->name->setTranslatedMessage(
             $this->name->trans($translator)
         )->toArray();
