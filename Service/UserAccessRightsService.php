@@ -31,7 +31,8 @@ readonly class UserAccessRightsService
         if($hasUserAccessRight) {
             $userAccessRightInSession = $this->requestStack->getSession()->get('userAccessRights');
             $userAccessRightId = is_object($userAccessRightInSession) ? $userAccessRightInSession->getId() : $userAccessRightInSession;
-            return $this->entityManager->getRepository($userAccessRightClass)->findById($userAccessRightId)->getQuery()->getOneOrNullResult();
+            $userAccessRight = $this->entityManager->getRepository($userAccessRightClass)->findById($userAccessRightId)->getQuery()->getOneOrNullResult();
+            return $userAccessRight?->isActive() ? $userAccessRight : null;
         }
 
         return null;
@@ -49,7 +50,7 @@ readonly class UserAccessRightsService
     }
 
     // Get user's userAccessRights
-    public function getUserAccessRights(mixed $user = null, ?string $accessCategory = null, mixed $customer = null): array
+    public function getUserAccessRights(mixed $user = null, ?string $accessCategory = null, mixed $customer = null, ?bool $active = true): array
     {
         $userClass = $this->container->getParameter('entity')['user_entity'];
         $userAccessRightClass = $this->container->getParameter('entity')['user_access_right_entity'];
@@ -63,7 +64,7 @@ readonly class UserAccessRightsService
             return [];
         }
 
-        return $this->entityManager->getRepository($userAccessRightClass)->findByUser($user, $accessCategory, $customer)->getQuery()->getResult();
+        return $this->entityManager->getRepository($userAccessRightClass)->findByUser($user, $accessCategory, $customer, $active)->getQuery()->getResult();
     }
 
     // Get all customers where the user has access rights for
