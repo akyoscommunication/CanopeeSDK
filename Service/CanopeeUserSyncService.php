@@ -70,7 +70,7 @@ readonly class CanopeeUserSyncService
             if(property_exists($userAccessRight, 'customer') && $userAccessRight->customer !== null) {
                 $customer = $customerRepository->findById($userAccessRight->customer->id)->getQuery()->getOneOrNullResult();
             }
-            $existingUserAccessRights = $this->userAccessRightService->getUserAccessRights($user, $userAccessRight->accessCategory->name, $customer);
+            $existingUserAccessRights = $this->userAccessRightService->getUserAccessRights($user, $userAccessRight->accessCategory->name, $customer, false);
 
             if(!count($existingUserAccessRights)) {
                 $newUserAccessRight = (new ($userAccessRightsEntityClass)())
