@@ -31,7 +31,7 @@ readonly class UserAccessRightsService
         if($hasUserAccessRight) {
             $userAccessRightInSession = $this->requestStack->getSession()->get('userAccessRights');
             $userAccessRightId = is_object($userAccessRightInSession) ? $userAccessRightInSession->getId() : $userAccessRightInSession;
-            $userAccessRight = $this->entityManager->getRepository($userAccessRightClass)->findById($userAccessRightId)->getQuery()->getOneOrNullResult();
+            $userAccessRight = $this->entityManager->getRepository($userAccessRightClass)->findById($userAccessRightId)->getQuery()->enableResultCache(3600, 'user_logged_'.$userAccessRightId)->getOneOrNullResult();
             return $userAccessRight?->isActive() ? $userAccessRight : null;
         }
 
