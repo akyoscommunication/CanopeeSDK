@@ -76,9 +76,17 @@ readonly class UserAccessRightsService
             return [];
         }
 
-        return array_unique(array_map(function(mixed $userAccessRight) {
+        $customers = array_map(function(mixed $userAccessRight) {
             return $userAccessRight->getCustomer();
-        }, $this->getUserAccessRights($user, self::CATEGORY_COLLABORATOR)));
+        }, $this->getUserAccessRights($user, self::CATEGORY_COLLABORATOR));
+
+        $return = [];
+
+        foreach($customers as $customer) {
+            $return[$customer->getId()] = $customer;
+        }
+
+        return $return;
     }
 
     // Get users which have such user access rights
