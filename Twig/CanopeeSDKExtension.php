@@ -40,6 +40,7 @@ class CanopeeSDKExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('getFile', [$this, 'getFile']),
             new TwigFunction('notifications', [$this, 'notifications']),
             new TwigFunction('currentUserAccessRight', [$this->userAccessRightsService, 'getLoggedUserAccessRight']),
+            new TwigFunction('getCustomers', [$this->userAccessRightsService, 'getCustomers']),
         ];
     }
 
